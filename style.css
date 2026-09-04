@@ -645,3 +645,21 @@ body.dark-mode .emergency-call-btn {
   line-height: 1.5;
   padding: 0 20px;
 }
+
+@media (max-width: 600px) {
+  #share-page-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  #share-page-btn svg {
+    flex-shrink: 0;
+  }
+
+  .link-row-text {
+    white-space: nowrap;
+  }
+}
