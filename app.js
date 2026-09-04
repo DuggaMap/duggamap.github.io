@@ -44,12 +44,15 @@ let dashboardCategory = 'iconic';
 let dashboardVisibleCount = 10;
 
 // ---------- HELPERS ----------
+
+
 function esc(str){ return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function haversine(lat1,lng1,lat2,lng2){
   const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
   const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
   return R*2*Math.asin(Math.sqrt(a));
 }
+
 function openMaps(lat,lng,mode){ window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=${mode}`, '_blank'); }
 function nearestMetroInfo(lat,lng){
   if (!DATA.metro.length) return null;
@@ -111,16 +114,30 @@ function toggleFav(name){
 
 // ---------- DATA MANAGEMENT: download / clear ----------
 function downloadMyList(){
-  const data = { saved: getFavNames(), visited: getVisitedNames() };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const saved = getFavNames();
+  const visited = getVisitedNames();
+
+  const text =
+    'DuggaMap – My Durga Puja List\n\n' +
+    'SAVED\n' +
+    saved.map(name => '• ' + name).join('\n') +
+    '\n\nVISITED\n' +
+    visited.map(name => '• ' + name).join('\n');
+
+  const blob = new Blob([text], { type:'text/plain' });
   const url = URL.createObjectURL(blob);
+
   const a = document.createElement('a');
-  a.href = url; a.download = 'my-durga-puja-list.json';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  a.href = url;
+  a.download = 'DuggaMap-My List.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
   URL.revokeObjectURL(url);
 }
 function clearAllData(){
-  showConfirmModal('🗑️ Clear All Data', 'This will permanently clear all your Saved and Visited pandals. This cannot be undone.', 'Yes, Clear All', ()=>{
+  showConfirmModal('🗑️ Clear All Data', 'This will permanently clear all your Saved and Visited pandals. This cannot be undone. <br><br>এটি আপনার সংরক্ষিত (Saved) এবং পরিদর্শিত (Visited) সমস্ত প্যান্ডেল চিরতরে মুছে ফেলবে। এটি আর ফিরিয়ে আনা যাবে না।', 'Yes, Clear All', ()=>{
     setFavNames([]); setVisitedNames([]);
     renderDashboard(); renderProfileList(); renderNearestTab();
     if (currentSheetItem) renderSheetContent();
@@ -173,7 +190,7 @@ function showInfoModal(title, message){
 }
 function showConfirmModal(title, message, confirmLabel, onConfirm){
   document.getElementById('modal-title-content').textContent = title;
-  document.getElementById('modal-text-content').textContent = message;
+  document.getElementById('modal-text-content').innerHTML = message;
   const footer = document.querySelector('#info-modal .modal-footer');
   footer.innerHTML = `
     <button class="modal-cancel-btn" id="modal-cancel-btn">Cancel</button>
@@ -225,8 +242,8 @@ async function copyUpiId(){
 // ---------- SHARE (native share sheet, with clipboard fallback) ----------
 async function sharePage(){
   const shareData = {
-    title: 'Kolkata Durga Puja Guide',
-    text: 'Find the nearest Durga Puja pandals in Kolkata — check out this guide!',
+    title: ' DuggaMap — Kolkata Durga Puja Guide',
+    text: 'Find the nearest Durga Puja pandals in Kolkata — check out this guide!\nআপনার পুজো হোক আরও সহজ, আরও আনন্দময়।',
     url: window.location.href
   };
   if (navigator.share) {
@@ -343,18 +360,36 @@ function drawMapLayers(){
 }
 
 // ---------- ROUTING (real road route, drawn on our own map) ----------
-function showRoute(destLat, destLng){
-  clearRoute();
-  routingControl = L.Routing.control({
-    waypoints: [L.latLng(userLat,userLng), L.latLng(destLat,destLng)],
-    routeWhileDragging:false, addWaypoints:false, draggableWaypoints:false,
-    show:false,
-    lineOptions:{ styles:[{ color:'#2563EB', weight:5, opacity:0.85 }] },
-    createMarker:()=>null
-  }).addTo(leafletMap);
-}
-function clearRoute(){ if (routingControl){ leafletMap.removeControl(routingControl); routingControl=null; } }
 
+function showRoute(destLat, destLng){
+
+  clearRoute();
+
+  // Move map to the user's current location when Navigate is tapped
+  leafletMap.setView([userLat, userLng], 16);
+
+  routingControl = L.Routing.control({
+
+    waypoints: [L.latLng(userLat,userLng), L.latLng(destLat,destLng)],
+
+    routeWhileDragging:false, addWaypoints:false, draggableWaypoints:false,
+
+    show:false,
+
+    lineOptions:{ styles:[{ color:'#2563EB', weight:5, opacity:0.85 }] },
+
+    createMarker:()=>null
+
+  }).addTo(leafletMap);
+
+}
+
+function clearRoute(){ 
+  if (routingControl){ 
+    leafletMap.removeControl(routingControl); 
+    routingControl=null; 
+  } 
+}
 // ---------- BOTTOM SHEET CARD ----------
 function openSheet(item, type){
   currentSheetItem = item; currentSheetType = type;
@@ -387,15 +422,22 @@ function renderSheetContent(){
         <button class="sheet-btn visit ${vis?'on':''}" id="sheet-visit-btn">${vis?'✅ Visited':'○ Mark Visited'}</button>
       </div>
       <div class="sheet-actions-row2">
-        <button class="sheet-btn route" id="sheet-route-btn">🧭 Navigate</button>
-        <button class="sheet-icon-btn" id="sheet-gmap-btn" title="Open in Google Maps">🗺️</button>
+        <button class="sheet-btn route" id="sheet-route-btn">
+        <img src="https://img.icons8.com/?size=100&id=8217&format=png&color=000000" alt="navigate" width="20" height="20"  style="vertical-align: middle;">
+        Navigate</button>
+        <button class="sheet-icon-btn" id="sheet-gmap-btn" title="Open in Google Maps">
+       <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" alt="Google Maps" width="25" height="25">
+        </button>
       </div>`;
   } else {
-    const typeLabel = item.type || (type==='metro' ? 'Metro/Bus' : 'Toilet');
+    const typeLabel = item.type || (type==='metro' ? 'Metro' : 'Toilet');
     html += `<div class="sheet-meta">${esc(typeLabel)} · ${dist} km</div>
       <div class="sheet-actions-row2">
-        <button class="sheet-btn route" id="sheet-route-btn">🧭 Navigate</button>
-        <button class="sheet-icon-btn" id="sheet-gmap-btn" title="Open in Google Maps">🗺️</button>
+        <button class="sheet-btn route" id="sheet-route-btn">
+        <img src="https://img.icons8.com/?size=100&id=8217&format=png&color=000000" alt="navigate" width="20" height="20"  style="vertical-align: middle;">
+        Navigate</button>
+        <button class="sheet-icon-btn" id="sheet-gmap-btn" title="Open in Google Maps">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" alt="Google Maps" width="25" height="25"></button>
       </div>`;
   }
   document.getElementById('sheet-body').innerHTML = html;
@@ -407,7 +449,7 @@ function buildSearchIndex(){
   ['iconic','south','north','saltlake','bonedibari'].forEach(cat=>{
     DATA[cat].forEach(p=>idx.push({...p, _cat:CATEGORY_LABELS[cat], _kind:'pandal'}));
   });
-  DATA.metro.forEach(m=>idx.push({...m, _cat:m.type||'Metro/Bus', _kind:'metro'}));
+  DATA.metro.forEach(m=>idx.push({...m, _cat:m.type||'Metro', _kind:'metro'}));
   DATA.toilet.forEach(t=>idx.push({...t, _cat:t.type||'Toilet', _kind:'toilet'}));
   return idx;
 }
@@ -441,22 +483,67 @@ function handleSearchGeneric(inputId, resultsId, enableHide){
   }).join('') : `<div class="search-empty">No matches</div>`;
   resultsEl.style.display = 'block';
 }
+
 function handleSearch(){ handleSearchGeneric('search-input-map','search-results-map', false); }
 function handleSearchNearest(){ handleSearchGeneric('search-input-nearest','search-results-nearest', true); }
 function handleVisitSearch(){
   const q = document.getElementById('search-input-visit').value.trim().toLowerCase();
   const resultsEl = document.getElementById('search-results-visit');
-  if (!q){ resultsEl.style.display='none'; resultsEl.innerHTML=''; return; }
-  const matches = getMasterPandalList()
-    .map(p=>({...p, dist:haversine(userLat,userLng,p.lat,p.lng)}))
-    .filter(p=>p.name.toLowerCase().includes(q)).slice(0,15);
-  resultsEl.innerHTML = matches.length ? matches.map(p=>{
+
+  if (!q){
+    resultsEl.style.display = 'none';
+    resultsEl.innerHTML = '';
+    return;
+  }
+
+  // Search all Puja Explorer pandal categories
+  const categories = ['all','iconic','south','north','bonedibari','saltlake'];
+  const index = [];
+
+  categories.forEach(cat => {
+    (DATA[cat] || []).forEach(p => {
+      index.push({
+        ...p,
+        _cat: CATEGORY_LABELS[cat] || cat,
+        _dcat: cat,
+        _kind: 'pandal'
+      });
+    });
+  });
+
+  const matches = index
+    .filter(p => p.name.toLowerCase().includes(q))
+    .slice(0,15);
+
+  resultsEl.innerHTML = matches.length ? matches.map(p => {
+    const fav = isFav(p.name);
     const vis = isVisited(p.name);
-    return `<div class="search-result-row" data-name="${esc(p.name)}">
-      <div class="sr-info"><span class="sr-name">${esc(p.name)}</span><span class="sr-cat">${p.dist.toFixed(1)} km</span></div>
-      <div class="sr-actions"><button class="sr-icon-btn mark-visit-btn ${vis?'on':''}">${vis?'✅ Visited':'○ Mark Visited'}</button></div>
+
+    return `<div class="search-result-row"
+      data-name="${esc(p.name)}"
+      data-lat="${p.lat}"
+      data-lng="${p.lng}"
+      data-kind="pandal"
+      data-dcat="${p._dcat}">
+
+      <div class="sr-info">
+        <span class="sr-name">${esc(p.name)}</span>
+        <span class="sr-cat">${esc(p._cat)}</span>
+      </div>
+
+      <div class="sr-actions">
+        <button class="sr-icon-btn fav-btn ${fav ? 'on' : ''}">
+          ${fav ? '⭐ Saved' : '☆ Save'}
+        </button>
+
+        <button class="sr-icon-btn visit-btn ${vis ? 'on' : ''}">
+          ${vis ? '✅ Visited' : '○ Visit'}
+        </button>
+      </div>
+
     </div>`;
   }).join('') : `<div class="search-empty">No matches</div>`;
+
   resultsEl.style.display = 'block';
 }
 function closeAllSearchResults(){
@@ -956,12 +1043,30 @@ document.querySelectorAll('.subtab-btn').forEach(btn => {
     if (e.target.closest('.visit-btn')) { toggleVisited(name); renderProfileList(); renderDashboard(); return; }
   });
   document.getElementById('search-input-visit').addEventListener('input', handleVisitSearch);
-  document.getElementById('search-results-visit').addEventListener('click', e=>{
-    const btn = e.target.closest('.mark-visit-btn'); if (!btn) return;
-    const name = btn.closest('.search-result-row').dataset.name;
+document.getElementById('search-results-visit').addEventListener('click', e => {
+  e.stopPropagation();
+
+  const row = e.target.closest('.search-result-row');
+  if (!row) return;
+
+  const name = row.dataset.name;
+
+  if (e.target.closest('.fav-btn')) {
+    toggleFav(name);
+    renderProfileList();
+    renderDashboard();
+    handleVisitSearch();
+    return;
+  }
+
+  if (e.target.closest('.visit-btn')) {
     toggleVisited(name);
-    handleVisitSearch(); renderProfileList(); renderDashboard();
-  });
+    renderProfileList();
+    renderDashboard();
+    handleVisitSearch();
+    return;
+  }
+});
   document.getElementById('dark-mode-toggle').addEventListener('change', e=>{
     document.body.classList.toggle('dark-mode', e.target.checked);
     try{ localStorage.setItem('dpg_dark_mode', e.target.checked?'1':'0'); }catch{}
@@ -1009,3 +1114,153 @@ async function init(){
   setInterval(()=>refreshLocation(false), 5000);
 }
 init();
+
+
+
+// Contact & Report toggle
+const contactToggleBtn = document.getElementById('contact-toggle-btn');
+const contactContent = document.getElementById('contact-content');
+
+if (contactToggleBtn && contactContent) {
+  contactToggleBtn.addEventListener('click', () => {
+
+    const isHidden = contactContent.style.display === 'none';
+
+    contactContent.style.display = isHidden ? 'block' : 'none';
+
+    const chev = contactToggleBtn.querySelector('.dashboard-chev');
+
+    if (chev) {
+      chev.textContent = isHidden ? '▴' : '▾';
+    }
+
+  });
+}
+
+
+
+// ---------- INSTALL APP POPUP ----------
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  let deferredInstallPrompt = null;
+
+  const installPopup = document.getElementById('install-app-popup');
+  const installAppBtn = document.getElementById('install-app-btn');
+  const installPopupClose = document.getElementById('install-popup-close');
+
+  if (!installPopup) return;
+
+  // Every refresh:
+  // const POPUP_COOLDOWN = 0;
+  //
+  // Every 8 hours:
+  // const POPUP_COOLDOWN = 8 * 60 * 60 * 1000;
+  //
+  // Every 24 hours:
+  // const POPUP_COOLDOWN = 24 * 60 * 60 * 1000;
+  //
+  const POPUP_COOLDOWN = 0 * 60 * 60 * 1000;
+
+
+  // Check if DuggaMap is already running as an installed app
+  function isDuggaMapInstalled() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true;
+  }
+
+
+  // Show popup according to the cooldown above
+  function showInstallPopup() {
+
+    if (isDuggaMapInstalled()) return;
+
+    const lastShown = Number(
+      localStorage.getItem('duggamap-install-popup-time') || 0
+    );
+
+    const now = Date.now();
+
+    if (now - lastShown < POPUP_COOLDOWN) return;
+
+    installPopup.style.display = 'flex';
+
+    localStorage.setItem(
+      'duggamap-install-popup-time',
+      now
+    );
+  }
+
+
+  // Browser says installation is available
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+  });
+
+
+  // Show popup after page loads
+  setTimeout(() => {
+    showInstallPopup();
+  }, 500);
+
+
+  // Close button
+if (installPopupClose) {
+  installPopupClose.onclick = () => {
+    installPopup.style.display = 'none';
+  };
+}
+
+// Close when clicking outside the popup box
+installPopup.addEventListener('click', (event) => {
+  if (event.target === installPopup) {
+    installPopup.style.display = 'none';
+  }
+});
+  // Install button
+  if (installAppBtn) {
+    installAppBtn.addEventListener('click', async () => {
+
+      if (deferredInstallPrompt) {
+
+        deferredInstallPrompt.prompt();
+
+        const result = await deferredInstallPrompt.userChoice;
+
+        if (result.outcome === 'accepted') {
+          installPopup.style.display = 'none';
+        }
+
+        deferredInstallPrompt = null;
+
+      } else {
+
+        // Browser does not currently provide a native install prompt
+        installPopup.style.display = 'none';
+
+      }
+    });
+  }
+
+
+  // App successfully installed
+  window.addEventListener('appinstalled', () => {
+
+    deferredInstallPrompt = null;
+
+    if (installPopup) {
+      installPopup.style.display = 'none';
+    }
+
+  });
+
+});
+
+window.addEventListener('load', () => {
+  const loadingScreen = document.getElementById('custom-loading-screen');
+
+  if (loadingScreen) {
+    loadingScreen.style.display = 'none';
+  }
+});
