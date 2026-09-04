@@ -1160,14 +1160,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // Every 24 hours:
   // const POPUP_COOLDOWN = 24 * 60 * 60 * 1000;
   //
-  const POPUP_COOLDOWN = 0 * 60 * 60 * 1000;
+  const POPUP_COOLDOWN = 5* 60 * 1000;
 
 
   // Check if DuggaMap is already running as an installed app
+  // function isDuggaMapInstalled() {
+  //   return window.matchMedia('(display-mode: standalone)').matches ||
+  //          window.navigator.standalone === true;
+  // }
+
   function isDuggaMapInstalled() {
-    return window.matchMedia('(display-mode: standalone)').matches ||
-           window.navigator.standalone === true;
-  }
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         window.navigator.standalone === true ||
+         localStorage.getItem('duggamap-installed') === '1';
+}
 
 
   // Show popup according to the cooldown above
@@ -1244,16 +1250,28 @@ installPopup.addEventListener('click', (event) => {
   }
 
 
-  // App successfully installed
-  window.addEventListener('appinstalled', () => {
+  // // App successfully installed
+  // window.addEventListener('appinstalled', () => {
 
-    deferredInstallPrompt = null;
+  //   deferredInstallPrompt = null;
 
-    if (installPopup) {
-      installPopup.style.display = 'none';
-    }
+  //   if (installPopup) {
+  //     installPopup.style.display = 'none';
+  //   }
 
-  });
+  // });
+
+  window.addEventListener('appinstalled', () => { 
+
+  localStorage.setItem('duggamap-installed', '1');
+
+  deferredInstallPrompt = null; 
+ 
+  if (installPopup) { 
+    installPopup.style.display = 'none'; 
+  } 
+ 
+});
 
 });
 
