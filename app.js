@@ -50,7 +50,11 @@ function esc(str){ return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'
 function haversine(lat1,lng1,lat2,lng2){
   const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
   const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R*2*Math.asin(Math.sqrt(a));
+  const distance = R*2*Math.asin(Math.sqrt(a));
+
+  return distance < 3
+     ? distance * 1.30
+     : distance * 1.18;
 }
 
 function openMaps(lat,lng,mode){ window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=${mode}`, '_blank'); }
@@ -1106,10 +1110,21 @@ async function init(){
   updateDashboardCategoryUI();
   renderNearestTab();
   renderProfileList();
-  if (localStorage.getItem('dpg_dark_mode')==='1'){
-    document.body.classList.add('dark-mode');
-    document.getElementById('dark-mode-toggle').checked = true;
-  }
+const darkMode = localStorage.getItem('dpg_dark_mode');
+const darkModeTime = Number(localStorage.getItem('dpg_dark_mode_time') || 0);
+
+if (darkMode === '1' && Date.now() - darkModeTime < 30 * 60 * 1000) {
+
+  document.body.classList.add('dark-mode');
+
+  document.getElementById('dark-mode-toggle').checked = true;
+
+} else {
+
+  localStorage.removeItem('dpg_dark_mode');
+  localStorage.removeItem('dpg_dark_mode_time');
+
+}
   refreshLocation(false);
   setInterval(()=>refreshLocation(false), 5000);
 }
