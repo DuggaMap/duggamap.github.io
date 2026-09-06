@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /qr2.jpeg
+
+User-agent: Googlebot-Image
+Disallow: /qr2.jpeg
 
 Sitemap: https://duggamap.github.io/sitemap.xml
