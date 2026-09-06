@@ -4,7 +4,7 @@
   "description": "A free Kolkata Durga Puja pandal guide with an interactive map.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#4A0E17",
+  "background_color": "#FFFFFF",
   /* "theme_color": "#4A0E17" */
   "icons": [
     {
