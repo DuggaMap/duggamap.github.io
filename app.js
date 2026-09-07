@@ -168,11 +168,22 @@ function updateDashboardCategoryUI(){
   document.getElementById('dashboard-cat-toggle-btn').textContent = CATEGORY_LABELS[dashboardCategory] + ' ▾';
 }
 function toggleDashboard(){
+
   dashboardExpanded = !dashboardExpanded;
-  document.getElementById('dashboard-expanded').style.display = dashboardExpanded ? 'block':'none';
-  document.getElementById('visited-tracker-section').style.display = dashboardExpanded ? 'block':'none';
-  document.getElementById('dashboard-toggle').classList.toggle('open', dashboardExpanded);
+
+  const dashboard = document.getElementById('dashboard-expanded');
+  const visited = document.getElementById('visited-tracker-section');
+
+  animateCollapsible(dashboard, dashboardExpanded);
+  animateCollapsible(visited, dashboardExpanded);
+
+  document.getElementById('dashboard-toggle').classList.toggle(
+    'open',
+    dashboardExpanded
+  );
+
   if (dashboardExpanded) renderProfileList();
+
 }
 
 // ---------- INFO MODAL (drives the #info-modal markup already in index.html) ----------
@@ -220,11 +231,65 @@ function renderEmergencyContacts(){
       <a href="tel:${c.number}" class="emergency-call-btn" title="Call ${esc(c.name)}">📞 ${esc(c.number)}</a>
     </div>`).join('');
 }
+function animateCollapsible(content, open) {
+
+  if (open) {
+    content.style.display = '';
+
+    content.animate(
+      [
+        {
+          opacity: 0,
+          transform: 'translateY(-6px)'
+        },
+        {
+          opacity: 1,
+          transform: 'translateY(0)'
+        }
+      ],
+      {
+        duration: 250,
+        easing: 'ease',
+        fill: 'forwards'
+      }
+    );
+
+  } else {
+
+    const animation = content.animate(
+      [
+        {
+          opacity: 1,
+          transform: 'translateY(0)'
+        },
+        {
+          opacity: 0,
+          transform: 'translateY(-6px)'
+        }
+      ],
+      {
+        duration: 250,
+        easing: 'ease',
+        fill: 'forwards'
+      }
+    );
+
+    animation.onfinish = () => {
+      content.style.display = 'none';
+    };
+  }
+}
+
+
 function toggleCollapsibleSection(contentId, btnId){
+
   const content = document.getElementById(contentId);
   const btn = document.getElementById(btnId);
+
   const isOpen = content.style.display !== 'none';
-  content.style.display = isOpen ? 'none' : '';
+
+  animateCollapsible(content, !isOpen);
+
   btn.classList.toggle('open', !isOpen);
 }
 
@@ -1152,13 +1217,16 @@ if (contactToggleBtn && contactContent) {
 
     const isHidden = contactContent.style.display === 'none';
 
-    contactContent.style.display = isHidden ? 'block' : 'none';
+    toggleCollapsibleSection('contact-content', 'contact-toggle-btn');
 
     const chev = contactToggleBtn.querySelector('.dashboard-chev');
 
     if (chev) {
       chev.textContent = isHidden ? '▴' : '▾';
     }
+
+  });
+}
 
   });
 }
