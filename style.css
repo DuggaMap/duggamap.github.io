@@ -67,7 +67,25 @@ body.dark-mode .app-header img {
 .tab-bar { margin-top: 2px !important; }
 .top-site-link:hover { text-decoration: underline; }
 body.dark-mode .top-site-link { color: #949ef4; text-decoration: none; }
-.top-site-link { color: #6060da; text-decoration: none; }
+.top-site-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 !important; padding: 0 !important; }
+
+.top-site-link { display: block; text-align: center; margin: 0 !important; padding: 0 !important; font-size: 11px; color: #6060da; text-decoration: none; }
+
+.top-site-link:hover { text-decoration: underline; }
+.copy-url-btn { margin: 0; padding: 0; border: none; background: none; color: #6060da; font-size: 9px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: transform 0.15s ease; }
+
+.copy-url-btn:hover { color: #6060da; text-decoration: underline; }
+
+.copy-url-btn:active { transform: scale(0.96); }
+
+body.dark-mode .copy-url-btn { color: #949ef4; }
+body.dark-mode .copy-url-btn:hover { color: #949ef4; text-decoration: underline; }
+.copy-url-btn:hover { color: #1155CC; text-decoration: underline; }
+.copy-url-btn:active { transform: scale(0.96); }
+body.dark-mode .top-site-link { color: #949ef4; text-decoration: none; }
+body.dark-mode .copy-url-btn { color: #949ef4; }
+
+body.dark-mode .copy-url-btn:hover { color: var(--gold); text-decoration: underline; }
 
 
 .puja-dates-bar {
@@ -924,4 +942,57 @@ body.dark-mode .cat-box.active,
 body.dark-mode .cat-box-with-info.active .info-btn-small,
 body.dark-mode .cat-box-with-info.active .cat-box {
   color: #000;
+}
+
+/* Smooth Map / Nearest / Menu transitions */
+.tab-panel {
+  animation: tabSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes tabSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* Smooth effect for all Profile/Menu clickable sections */
+.section-toggle,
+.dashboard-collapsed,
+.link-row,
+.link-row-text,
+.link-row-app-icon,
+.link-row-download-icon {
+  transition:
+    all 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.15s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Hover effect */
+.section-toggle:hover,
+.dashboard-collapsed:hover,
+.link-row:hover,
+.link-row-text:hover,
+.link-row-app-icon:hover,
+.link-row-download-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--gold);
+}
+
+/* Click / press effect */
+.section-toggle:active,
+.dashboard-collapsed:active,
+.link-row:active,
+.link-row-text:active,
+.link-row-app-icon:active,
+.link-row-download-icon:active {
+  transform: translateY(0) scale(0.97);
 }
