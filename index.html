@@ -335,19 +335,76 @@
   <span class="dashboard-chev">▾</span>
 </button>
 
-<div class="profile-card-compact" id="account-content" style="display:none;">
+div class="profile-card-compact" id="account-content" style="display:none;">
   <div class="profile-avatar">👤</div>
   <div class="profile-info">
     <div class="profile-status">No contact details (Soon)</div>
     <span class="guest-badge">Guest</span>
   </div>
-  <button class="edit-icon-btn" disabled title="Needs login backend">✏️</button>
+  <button class="edit-icon-btn" id="edit-profile-btn" title="Edit profile">✏️</button>
+</div>
+
+<div id="edit-profile-content" style="display:none;">
+
+  <input
+    type="text"
+    id="profile-name-input"
+    placeholder="Enter your name"
+    autocomplete="name"
+  >
+
+  <label class="profile-photo-select" for="profile-photo-input">
+    Choose Profile Photo
+  </label>
+
+  <input
+    type="file"
+    id="profile-photo-input"
+    accept="image/*"
+    hidden
+  >
+
+  <div id="profile-crop-container" style="display:none;">
+
+    <div class="profile-crop-area">
+      <canvas id="profile-crop-canvas"></canvas>
+    </div>
+
+    <div class="profile-crop-hint">
+      Drag to position • Pinch or scroll to zoom
+    </div>
+
+    <div class="profile-crop-actions">
+      <button type="button" id="profile-crop-cancel">Cancel</button>
+      <button type="button" id="profile-crop-done">Done</button>
+    </div>
+
+  </div>
+
+  <button type="button" id="save-profile-btn">Save</button>
+  <button type="button" id="remove-profile-btn">🗑️ Remove Profile</button>
+
 </div>
 
 <div class="settings-row">
   <span>🌙 Dark Mode</span>
 
-  <div class="settings-actions">
+      <div class="settings-actions">
+    <button id="direct-install-app-btn" class="dhak-btn">
+  <svg xmlns="http://www.w3.org/2000/svg"
+       width="16" height="16"
+       viewBox="0 0 466 511.98"
+       aria-hidden="true">
+    <g>
+      <path fill="#EA4335" d="M199.9 237.8l-198.5 232.37c7.22,24.57 30.16,41.81 55.8,41.81 11.16 0 20.93,-2.79 29.3,-8.37l244.16 -139.46 -130.76 -126.35z"/>
+      <path fill="#FBBC04" d="M433.91 205.1l-104.65 -60 -111.61 110.22 113.01 108.83 104.64 -58.6c18.14,-9.77 30.7,-29.3 30.7,-50.23 -1.4,-20.93 -13.95,-40.46 -32.09,-50.22z"/>
+      <path fill="#34A853" d="M199.42 273.45l129.85 -128.35 -241.37 -136.73c-8.37,-5.58 -19.54,-8.37 -30.7,-8.37 -26.5 0 -50.22 18.14 -55.8 41.86l198.02 231.59z"/>
+      <path fill="#4285F4" d="M1.39 41.86c-1.39 4.18 -1.39 9.77 -1.39 15.34v397.64c0 5.57 0 9.76 1.4 15.34l216.27 -214.86 -216.28 -213.46z"/>
+    </g>
+  </svg>
+  APP
+</button>
+        
     <button id="dhak-btn" class="dhak-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
            stroke="currentColor" stroke-width="2.2"
