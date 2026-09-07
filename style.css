@@ -642,7 +642,27 @@ body.dark-mode .medal-card {
 .data-action-btn.danger { border-color:rgba(220,38,38,0.4); background:rgba(220,38,38,0.08); color:#dc2626; }
 
 .profile-card-compact { margin:0 16px; background:var(--surface); border:1px solid var(--border-tint); border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 10px rgba(74,14,23,0.06); }
-.profile-avatar { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,var(--gold-dark),var(--gold)); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; color:#3A0810; }
+
+.profile-avatar { 
+  width:48px; 
+  height:48px; 
+  border-radius:50%; 
+  background:linear-gradient(135deg,var(--gold-dark),var(--gold)); 
+  display:flex; 
+  align-items:center; 
+  justify-content:center; 
+  font-size:20px; 
+  flex-shrink:0; 
+  color:#3A0810;
+  overflow:hidden;
+}
+.profile-avatar img {
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  object-fit:cover;
+  display:block;
+}
 .profile-info { flex:1; min-width:0; }
 .profile-status { font-size:13px; color:var(--page-muted); }
 .guest-badge { display:inline-block; margin-top:4px; font-size:11px; font-weight:600; color:var(--heading); border:1px solid var(--border-tint); border-radius:20px; padding:2px 10px; }
@@ -1044,6 +1064,26 @@ body:not(.dark-mode) .sheet-btn.route img {
   overflow: hidden;
 }
 
+/* Allow only Your Puja Journey dropdown to extend outside */
+#dashboard-expanded {
+  overflow: visible;
+}
+/* Keep Your Puja Journey above the sections below */
+#dashboard-expanded {
+  overflow: visible;
+  position: relative;
+  z-index: 9999;
+}
+
+#dashboard-category-dropdown {
+  position: relative;
+  z-index: 10000;
+}
+
+#dashboard-category-dropdown .dropdown-menu {
+  z-index: 10001;
+}
+
 /* Smooth Opening Animation */
 .collapsible-open {
   animation: smoothExpand 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -1133,4 +1173,225 @@ body:not(.dark-mode) .sheet-btn.route img {
 #account-content {
   margin-top: 8px;
   margin-bottom: 8px;
+}
+
+/* ===== EDIT PROFILE ===== */
+
+#edit-profile-content {
+  margin: 10px 16px 12px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-tint);
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(74, 14, 23, 0.06);
+}
+
+#profile-name-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-tint);
+  border-radius: 9px;
+  background: var(--surface-tint);
+  color: var(--page-text);
+  font-size: 13px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+#profile-name-input::placeholder {
+  color: var(--page-muted);
+}
+
+#profile-name-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+}
+
+.profile-photo-select {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px solid var(--border-tint);
+  border-radius: 9px;
+  background: var(--surface-tint);
+  color: var(--heading);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.profile-photo-select:hover {
+  border-color: var(--gold);
+  background: var(--surface);
+  transform: translateY(-1px);
+}
+
+.profile-photo-select:active {
+  transform: scale(0.98);
+}
+
+#profile-crop-container {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--surface-tint);
+  border: 1px solid var(--border-tint);
+}
+
+.profile-crop-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+#profile-crop-canvas {
+  display: block;
+  width: min(280px, 100%);
+  height: auto;
+  max-width: 100%;
+  border-radius: 10px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+#profile-crop-canvas:active {
+  cursor: grabbing;
+}
+
+.profile-crop-hint {
+  margin-top: 9px;
+  text-align: center;
+  color: var(--page-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.profile-crop-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.profile-crop-actions button,
+#save-profile-btn {
+  flex: 1;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-tint);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--heading);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    all 0.2s ease,
+    transform 0.15s ease;
+}
+
+.profile-crop-actions button:hover,
+#save-profile-btn:hover {
+  border-color: var(--gold);
+  transform: translateY(-1px);
+}
+
+.profile-crop-actions button:active,
+#save-profile-btn:active {
+  transform: scale(0.97);
+}
+
+#profile-crop-done {
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  color: #fff;
+  border-color: var(--gold);
+}
+
+#save-profile-btn {
+  width: 100%;
+  margin-top: 10px;
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  color: #fff;
+  border-color: var(--gold);
+}
+
+/* ===== REMOVE PROFILE ===== */
+
+#remove-profile-btn {
+  width: 100%;
+  margin-top: 8px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  border-radius: 9px;
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+#remove-profile-btn:hover {
+  background: rgba(220, 38, 38, 0.14);
+  border-color: rgba(220, 38, 38, 0.55);
+  transform: translateY(-1px);
+}
+
+#remove-profile-btn:active {
+  transform: scale(0.97);
+}
+
+body.dark-mode #remove-profile-btn {
+  border-color: rgba(248, 113, 113, 0.35);
+  background: rgba(248, 113, 113, 0.08);
+  color: #f87171;
+}
+
+body.dark-mode #remove-profile-btn:hover {
+  background: rgba(248, 113, 113, 0.14);
+  border-color: rgba(248, 113, 113, 0.55);
+}
+
+.edit-icon-btn {
+  transition:
+    all 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.15s ease,
+    box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.edit-icon-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--gold);
+}
+
+.edit-icon-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.edit-icon-btn.open {
+  color: var(--gold);
+  border-color: var(--gold);
 }
