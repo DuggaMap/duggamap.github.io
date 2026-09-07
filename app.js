@@ -1018,10 +1018,478 @@ document.querySelectorAll('[data-info="all-pandals"]').forEach(btn => {
 
   document.getElementById('emergency-toggle-btn').addEventListener('click', ()=>toggleCollapsibleSection('emergency-list','emergency-toggle-btn'));
   document.getElementById('routes-toggle-btn').addEventListener('click', ()=>toggleCollapsibleSection('routes-content','routes-toggle-btn'));
-  document.getElementById('account-toggle-btn').addEventListener('click', ()=>toggleCollapsibleSection('account-content','account-toggle-btn'));
+  
   document.getElementById('chai-toggle-btn').addEventListener('click', ()=>toggleCollapsibleSection('chai-content','chai-toggle-btn'));
   document.getElementById('share-page-btn').addEventListener('click', sharePage);
-  
+
+document.getElementById('account-toggle-btn').addEventListener('click', () => {
+
+  const accountContent = document.getElementById('account-content');
+  const editProfileContent = document.getElementById('edit-profile-content');
+  const btn = document.getElementById('account-toggle-btn');
+
+  const isOpen = accountContent.style.display !== 'none';
+
+  toggleCollapsibleSection(
+    'account-content',
+    'account-toggle-btn'
+  );
+
+  if (isOpen && editProfileContent) {
+    animateCollapsible(editProfileContent, false);
+  }
+
+});
+
+const editProfileBtn = document.getElementById('edit-profile-btn');
+const editProfileContent = document.getElementById('edit-profile-content');
+const profileNameInput = document.getElementById('profile-name-input');
+const saveProfileBtn = document.getElementById('save-profile-btn');
+
+if (editProfileBtn && editProfileContent) {
+
+  editProfileBtn.addEventListener('click', () => {
+
+    const isOpen = editProfileContent.style.display !== 'none';
+
+    animateCollapsible(
+      editProfileContent,
+      !isOpen
+    );
+
+    editProfileBtn.classList.toggle(
+      'open',
+      !isOpen
+    );
+
+  });
+
+}
+
+if (saveProfileBtn && profileNameInput) {
+  saveProfileBtn.addEventListener('click', () => {
+
+    const name = profileNameInput.value.trim();
+    const profileAvatar = document.querySelector('.profile-avatar');
+    const croppedPhoto = profileAvatar?.dataset.croppedPhoto;
+
+    if (name) {
+      localStorage.setItem('duggamap-profile-name', name);
+    }
+
+    if (croppedPhoto) {
+      localStorage.setItem('duggamap-profile-photo', croppedPhoto);
+    }
+
+    const profileStatus = document.querySelector('.profile-status');
+
+    if (profileStatus && name) {
+      profileStatus.textContent = name;
+    }
+
+    editProfileContent.style.display = 'none';
+  });
+}
+
+const profilePhotoInput = document.getElementById('profile-photo-input');
+const profileCropContainer = document.getElementById('profile-crop-container');
+const profileCropCanvas = document.getElementById('profile-crop-canvas');
+const profileCropDone = document.getElementById('profile-crop-done');
+const profileCropCancel = document.getElementById('profile-crop-cancel');
+
+let profileCropImage = null;
+let profileCropScale = 1;
+let profileCropX = 0;
+let profileCropY = 0;
+let profileCropStartX = 0;
+let profileCropStartY = 0;
+let profileCropDragging = false;
+let profileCroppedPhoto = null;
+
+function drawProfileCrop() {
+  if (!profileCropImage || !profileCropCanvas) return;
+
+  const ctx = profileCropCanvas.getContext('2d');
+
+  const width = 280;
+  const height = 280;
+
+  profileCropCanvas.width = width;
+  profileCropCanvas.height = height;
+
+  ctx.clearRect(0, 0, width, height);
+
+  const baseScale = Math.max(
+    width / profileCropImage.width,
+    height / profileCropImage.height
+  );
+
+  const scale = baseScale * profileCropScale;
+
+  const imageWidth = profileCropImage.width * scale;
+  const imageHeight = profileCropImage.height * scale;
+
+  const x = (width - imageWidth) / 2 + profileCropX;
+  const y = (height - imageHeight) / 2 + profileCropY;
+
+  ctx.drawImage(
+    profileCropImage,
+    x,
+    y,
+    imageWidth,
+    imageHeight
+  );
+
+  // Dark overlay
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fillRect(0, 0, width, height);
+
+  // Circular clear area
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.beginPath();
+  ctx.arc(width / 2, height / 2, 105, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Restore
+  ctx.restore();
+
+  // Circular border
+  ctx.beginPath();
+  ctx.arc(width / 2, height / 2, 105, 0, Math.PI * 2);
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+if (profilePhotoInput) {
+  profilePhotoInput.addEventListener('change', () => {
+
+    const file = profilePhotoInput.files[0];
+
+    if (!file || !file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+
+      profileCropImage = new Image();
+
+      profileCropImage.onload = () => {
+
+        profileCropScale = 1;
+        profileCropX = 0;
+        profileCropY = 0;
+        profileCroppedPhoto = null;
+
+        if (profileCropContainer) {
+          profileCropContainer.style.display = 'block';
+        }
+
+        drawProfileCrop();
+      };
+
+      profileCropImage.src = reader.result;
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+// Drag with mouse or touch
+if (profileCropCanvas) {
+
+  profileCropCanvas.addEventListener('pointerdown', e => {
+
+    if (!profileCropImage) return;
+
+    profileCropDragging = true;
+
+    profileCropStartX = e.clientX - profileCropX;
+    profileCropStartY = e.clientY - profileCropY;
+
+    profileCropCanvas.setPointerCapture(e.pointerId);
+  });
+
+  profileCropCanvas.addEventListener('pointermove', e => {
+
+    if (!profileCropDragging) return;
+
+    profileCropX = e.clientX - profileCropStartX;
+    profileCropY = e.clientY - profileCropStartY;
+
+    drawProfileCrop();
+  });
+
+  profileCropCanvas.addEventListener('pointerup', () => {
+    profileCropDragging = false;
+  });
+
+  profileCropCanvas.addEventListener('pointercancel', () => {
+    profileCropDragging = false;
+  });
+
+  // Wheel zoom on desktop
+  profileCropCanvas.addEventListener(
+    'wheel',
+    e => {
+
+      e.preventDefault();
+
+      if (!profileCropImage) return;
+
+      profileCropScale += e.deltaY < 0 ? 0.08 : -0.08;
+
+      profileCropScale = Math.max(
+        1,
+        Math.min(3, profileCropScale)
+      );
+
+      drawProfileCrop();
+    },
+    { passive: false }
+  );
+
+  // Pinch zoom on mobile
+  let pinchStartDistance = null;
+  let pinchStartScale = 1;
+
+  profileCropCanvas.addEventListener('pointerdown', e => {
+
+    if (!profileCropImage) return;
+
+    const pointers = profileCropCanvas.getCoalescedEvents
+      ? profileCropCanvas.getCoalescedEvents()
+      : [];
+
+  });
+
+  const activePointers = new Map();
+
+  profileCropCanvas.addEventListener('pointerdown', e => {
+    activePointers.set(e.pointerId, {
+      x: e.clientX,
+      y: e.clientY
+    });
+
+    if (activePointers.size === 2) {
+      const points = [...activePointers.values()];
+
+      pinchStartDistance = Math.hypot(
+        points[0].x - points[1].x,
+        points[0].y - points[1].y
+      );
+
+      pinchStartScale = profileCropScale;
+    }
+  });
+
+  profileCropCanvas.addEventListener('pointermove', e => {
+
+    if (!activePointers.has(e.pointerId)) return;
+
+    activePointers.set(e.pointerId, {
+      x: e.clientX,
+      y: e.clientY
+    });
+
+    if (activePointers.size === 2 && pinchStartDistance) {
+
+      const points = [...activePointers.values()];
+
+      const distance = Math.hypot(
+        points[0].x - points[1].x,
+        points[0].y - points[1].y
+      );
+
+      profileCropScale =
+        pinchStartScale *
+        (distance / pinchStartDistance);
+
+      profileCropScale = Math.max(
+        1,
+        Math.min(3, profileCropScale)
+      );
+
+      drawProfileCrop();
+    }
+  });
+
+  function clearPointer(e) {
+    activePointers.delete(e.pointerId);
+
+    if (activePointers.size < 2) {
+      pinchStartDistance = null;
+    }
+  }
+
+  profileCropCanvas.addEventListener('pointerup', clearPointer);
+  profileCropCanvas.addEventListener('pointercancel', clearPointer);
+}
+
+// Cancel crop
+if (profileCropCancel) {
+  profileCropCancel.addEventListener('click', () => {
+
+    profileCropImage = null;
+    profileCroppedPhoto = null;
+
+    if (profileCropContainer) {
+      profileCropContainer.style.display = 'none';
+    }
+
+    profilePhotoInput.value = '';
+  });
+}
+
+// Finish crop
+if (profileCropDone) {
+  profileCropDone.addEventListener('click', () => {
+
+    if (!profileCropImage) return;
+
+const outputCanvas = document.createElement('canvas');
+
+const cropDiameter = 210;
+
+outputCanvas.width = cropDiameter;
+outputCanvas.height = cropDiameter;
+
+const ctx = outputCanvas.getContext('2d');
+
+const previewSize = 280;
+const cropLeft = (previewSize - cropDiameter) / 2;
+const cropTop = (previewSize - cropDiameter) / 2;
+
+const baseScale = Math.max(
+  previewSize / profileCropImage.width,
+  previewSize / profileCropImage.height
+);
+
+const scale = baseScale * profileCropScale;
+
+const imageWidth = profileCropImage.width * scale;
+const imageHeight = profileCropImage.height * scale;
+
+const imageX = (previewSize - imageWidth) / 2 + profileCropX;
+const imageY = (previewSize - imageHeight) / 2 + profileCropY;
+
+const sourceX = (cropLeft - imageX) / scale;
+const sourceY = (cropTop - imageY) / scale;
+const sourceSize = cropDiameter / scale;
+
+ctx.drawImage(
+  profileCropImage,
+  sourceX,
+  sourceY,
+  sourceSize,
+  sourceSize,
+  0,
+  0,
+  cropDiameter,
+  cropDiameter
+);
+
+profileCroppedPhoto =
+  outputCanvas.toDataURL('image/jpeg', 0.78);
+
+    const profileAvatar =
+      document.querySelector('.profile-avatar');
+
+    if (profileAvatar) {
+
+      profileAvatar.innerHTML = `
+        <img
+          src="${profileCroppedPhoto}"
+          alt="Profile picture"
+        >
+      `;
+
+      profileAvatar.dataset.croppedPhoto =
+        profileCroppedPhoto;
+    }
+
+    if (profileCropContainer) {
+      profileCropContainer.style.display = 'none';
+    }
+  });
+}
+
+
+const savedProfileName = localStorage.getItem('duggamap-profile-name');
+const savedProfilePhoto = localStorage.getItem('duggamap-profile-photo');
+
+const profileStatus = document.querySelector('.profile-status');
+const profileAvatar = document.querySelector('.profile-avatar');
+
+if (savedProfileName && profileStatus) {
+  profileStatus.textContent = savedProfileName;
+}
+
+if (savedProfilePhoto && profileAvatar) {
+  profileAvatar.innerHTML = `
+    <img src="${savedProfilePhoto}" alt="Profile picture">
+  `;
+
+  profileAvatar.dataset.croppedPhoto = savedProfilePhoto;
+}
+
+
+const removeProfileBtn = document.getElementById('remove-profile-btn');
+
+if (removeProfileBtn) {
+  removeProfileBtn.addEventListener('click', () => {
+
+    showConfirmModal(
+      '🗑️ Remove Profile?',
+      'This will remove your saved name and profile picture from this browser.',
+      'Remove',
+      () => {
+
+        localStorage.removeItem('duggamap-profile-name');
+        localStorage.removeItem('duggamap-profile-photo');
+
+        const profileStatus =
+          document.querySelector('.profile-status');
+
+        const profileAvatar =
+          document.querySelector('.profile-avatar');
+
+        const guestBadge =
+          document.querySelector('.guest-badge');
+
+        const profileNameInput =
+          document.getElementById('profile-name-input');
+
+        const profilePhotoInput =
+          document.getElementById('profile-photo-input');
+
+        if (profileStatus) {
+          profileStatus.textContent = 'No contact details';
+        }
+
+        if (profileAvatar) {
+          profileAvatar.innerHTML = '👤';
+          delete profileAvatar.dataset.croppedPhoto;
+        }
+
+        if (guestBadge) {
+          guestBadge.textContent = 'Guest';
+        }
+
+        if (profileNameInput) {
+          profileNameInput.value = '';
+        }
+
+        if (profilePhotoInput) {
+          profilePhotoInput.value = '';
+        }
+
+      }
+    );
+  });
+}
+
 
 
 function payViaUpi() {
@@ -1238,6 +1706,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const installPopup = document.getElementById('install-app-popup');
   const installAppBtn = document.getElementById('install-app-btn');
+  const directInstallAppBtn = document.getElementById('direct-install-app-btn');
   const installPopupClose = document.getElementById('install-popup-close');
 
   if (!installPopup) return;
@@ -1339,6 +1808,23 @@ installPopup.addEventListener('click', (event) => {
       }
     });
   }
+
+    // Direct APP button
+if (directInstallAppBtn) {
+  directInstallAppBtn.addEventListener('click', async () => {
+
+    if (isDuggaMapInstalled()) {
+      showInfoModal(
+        '📱 App Already Installed',
+        'DuggaMap is already installed on your device.'
+      );
+      return;
+    }
+
+    // installation code will go here
+
+  });
+}
 
 
   // // App successfully installed
