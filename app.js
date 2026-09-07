@@ -1796,7 +1796,7 @@ installPopup.addEventListener('click', (event) => {
 
 
 
-  // Direct APP button
+// Direct APP button
 if (directInstallAppBtn) {
   directInstallAppBtn.addEventListener('click', async () => {
 
@@ -1808,7 +1808,25 @@ if (directInstallAppBtn) {
       return;
     }
 
-    // installation code will go here
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+
+      const result = await deferredInstallPrompt.userChoice;
+
+      if (result.outcome === 'accepted') {
+        deferredInstallPrompt = null;
+      } else {
+        deferredInstallPrompt = null;
+      }
+
+      return;
+    }
+
+        // Browser does not currently provide the native install prompt
+    showInfoModal(
+      '📱 Install DuggaMap',
+      'The install option is not currently available in this browser. Please use the browser menu and choose “Install app” or “Add to Home screen”.'
+    );
 
   });
 }
