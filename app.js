@@ -1186,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Every 24 hours:
   // const POPUP_COOLDOWN = 24 * 60 * 60 * 1000;
   //
-  const POPUP_COOLDOWN = 0* 60 * 1000;
+  const POPUP_COOLDOWN = 5* 60 * 1000;
 
 
   // Check if DuggaMap is already running as an installed app
@@ -1314,3 +1314,20 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./service-worker.js');
   });
 }
+
+document.getElementById('copy-url-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('copy-url-btn');
+
+  try {
+    await navigator.clipboard.writeText('https://duggamap.github.io/');
+
+    btn.textContent = '✓ Copied!';
+
+    setTimeout(() => {
+      btn.textContent = 'Copy URL';
+    }, 5000);
+
+  } catch (err) {
+    console.error('Failed to copy URL:', err);
+  }
+});
