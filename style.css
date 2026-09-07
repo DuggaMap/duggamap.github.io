@@ -996,3 +996,30 @@ body.dark-mode .cat-box-with-info.active .cat-box {
 .link-row-download-icon:active {
   transform: translateY(0) scale(0.97);
 }
+
+.section-toggle,
+.dashboard-collapsed,
+.link-row,
+.link-row-text,
+.link-row-app-icon,
+.link-row-download-icon,
+.chai-pay-btn,
+button,
+a,
+label,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Navigate button - light mode only */
+body:not(.dark-mode) .sheet-btn.route {
+  color: #fff;
+}
+
+body:not(.dark-mode) .sheet-btn.route img {
+  filter: brightness(0) invert(1);
+}
+
+.footer-center {
+  margin-top: 7.5px;
+}
