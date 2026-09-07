@@ -1814,6 +1814,23 @@ if (directInstallAppBtn) {
 }
 
 
+  // ADD THE METRO MAP CODE HERE
+const metroMapLink = document.getElementById('metro-map-link');
+
+if (metroMapLink) {
+  metroMapLink.addEventListener('click', (e) => {
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+
+    if (isStandalone) {
+      e.preventDefault();
+      window.location.href = 'mapmetro.png';
+    }
+  });
+}
+
+
   // App successfully installed
   window.addEventListener('appinstalled', () => {
 
