@@ -1228,9 +1228,6 @@ if (contactToggleBtn && contactContent) {
   });
 }
 
-  });
-}
-
 
 
 // ---------- INSTALL APP POPUP ----------
