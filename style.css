@@ -268,7 +268,7 @@ body.dark-mode .search-bar:focus-within svg {
 
 /* Dropdown (Area selector) +  buttons (Metro/Toilet) */
 .dropdown { position:relative; display:flex; flex-shrink:0; }
-.pill-btn { background:var(--pill-bg); border:1px solid var(--border-tint); color:var(--page-text); cursor:pointer; font-size:12.5px; font-weight:600; border-radius:10px; padding:9px 10px; flex-shrink:0; white-space:nowrap; }
+/* .pill-btn { background:var(--pill-bg); border:1px solid var(--border-tint); color:var(--page-text); cursor:pointer; font-size:12.5px; font-weight:600; border-radius:10px; padding:9px 10px; flex-shrink:0; white-space:nowrap; } */
 button#metro-toggle-btn.active {
   background: #2563eb !important;
   border-color: #000000 !important;
@@ -284,6 +284,35 @@ body.dark-mode button#toilet-toggle-btn-n.active {
   color: #000000 !important;
 }
 
+.pill-btn { 
+  background:var(--pill-bg); 
+  border:1px solid var(--border-tint); 
+  color:var(--page-text); 
+  cursor:pointer; 
+  font-size:12.5px; 
+  font-weight:600; 
+  border-radius:10px; 
+  padding:9px 10px; 
+  flex-shrink:0; 
+  white-space:nowrap; 
+  position: relative;
+  overflow: hidden;
+  transition: 
+    all 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.15s ease,
+    box-shadow 0.3s ease;
+}
+
+.pill-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(29, 113, 141, 0.2);
+  border-color: var(--gold);
+}
+
+.pill-btn:active {
+  transform: translateY(0px) scale(0.97);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
 
 .pill-btn.active { background:var(--gold); color:#fff; border-color:#14b8a6; }
 .dropdown-toggle.cat-box { border-radius:20px; }
