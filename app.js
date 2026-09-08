@@ -1604,10 +1604,30 @@ document.getElementById('search-results-visit').addEventListener('click', e => {
     return;
   }
 });
-  document.getElementById('dark-mode-toggle').addEventListener('change', e=>{
-    document.body.classList.toggle('dark-mode', e.target.checked);
-    try{ localStorage.setItem('dpg_dark_mode', e.target.checked?'1':'0'); }catch{}
-  });
+   handleVisitSearch();
+    return;
+  }
+});
+document.getElementById('dark-mode-toggle').addEventListener('change', e=>{
+
+  document.body.classList.toggle('dark-mode', e.target.checked);
+
+  try{
+    localStorage.setItem('dpg_dark_mode', e.target.checked?'1':'0');
+
+    if (e.target.checked) {
+      localStorage.setItem('dpg_dark_mode_time', Date.now());
+    } else {
+      localStorage.removeItem('dpg_dark_mode_time');
+    }
+  }catch{}
+
+});
+const dhakAudio = new Audio('dhak.mp3');
+const dhakBtn = document.getElementById('dhak-btn');
+
+dhakBtn.addEventListener('click', () => {
+
 const dhakAudio = new Audio('dhak.mp3');
 const dhakBtn = document.getElementById('dhak-btn');
 
