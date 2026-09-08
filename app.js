@@ -1623,10 +1623,6 @@ document.getElementById('dark-mode-toggle').addEventListener('change', e=>{
   }catch{}
 
 });
-const dhakAudio = new Audio('dhak.mp3');
-const dhakBtn = document.getElementById('dhak-btn');
-
-dhakBtn.addEventListener('click', () => {
 
 const dhakAudio = new Audio('dhak.mp3');
 const dhakBtn = document.getElementById('dhak-btn');
