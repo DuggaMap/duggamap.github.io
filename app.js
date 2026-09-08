@@ -1604,10 +1604,6 @@ document.getElementById('search-results-visit').addEventListener('click', e => {
     return;
   }
 });
-   handleVisitSearch();
-    return;
-  }
-});
 document.getElementById('dark-mode-toggle').addEventListener('change', e=>{
 
   document.body.classList.toggle('dark-mode', e.target.checked);
@@ -1623,7 +1619,6 @@ document.getElementById('dark-mode-toggle').addEventListener('change', e=>{
   }catch{}
 
 });
-
 const dhakAudio = new Audio('dhak.mp3');
 const dhakBtn = document.getElementById('dhak-btn');
 
@@ -1647,7 +1642,6 @@ dhakBtn.addEventListener('click', () => {
 dhakAudio.addEventListener('ended', () => {
   dhakBtn.classList.remove('playing');
 });
-
 // ---------- INIT ----------
 async function init(){
   await loadAllData();
