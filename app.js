@@ -1674,6 +1674,52 @@ if (darkMode === '1' && Date.now() - darkModeTime < 60 * 60 * 1000) {
 init();
 
 
+// ---------- RESTORE SCROLL POSITION IN INSTALLED APP ----------
+
+if (
+  window.matchMedia('(display-mode: standalone)').matches ||
+  window.navigator.standalone === true
+) {
+
+  document.querySelectorAll(
+    '.social-links a, .extra-link, .helper-icons a'
+  ).forEach(link => {
+
+    link.addEventListener('click', () => {
+      sessionStorage.setItem(
+        'dpg_scroll_position',
+        window.scrollY
+      );
+
+      sessionStorage.setItem(
+        'dpg_restore_scroll',
+        '1'
+      );
+    });
+
+  });
+
+  window.addEventListener('pageshow', () => {
+
+    if (sessionStorage.getItem('dpg_restore_scroll') !== '1') {
+      return;
+    }
+
+    const savedPosition = Number(
+      sessionStorage.getItem('dpg_scroll_position') || 0
+    );
+
+    setTimeout(() => {
+
+      window.scrollTo(0, savedPosition);
+
+      sessionStorage.removeItem('dpg_restore_scroll');
+
+    }, 100);
+
+  });
+
+}
 
 // Contact & Report toggle
 const contactToggleBtn = document.getElementById('contact-toggle-btn');
