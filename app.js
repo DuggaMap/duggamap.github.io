@@ -1674,29 +1674,32 @@ if (darkMode === '1' && Date.now() - darkModeTime < 60 * 60 * 1000) {
 init();
 
 
-// ---------- RESTORE SCROLL POSITION IN INSTALLED APP ----------
+// ---------- ROBUST SCROLL POSITION RESTORE FOR PWA ----------
 
-if (
+const isStandalone =
   window.matchMedia('(display-mode: standalone)').matches ||
-  window.navigator.standalone === true
-) {
+  window.navigator.standalone === true;
 
-  document.querySelectorAll(
+if (isStandalone) {
+
+  const linksToTrack = document.querySelectorAll(
     '.social-links a, .extra-link, .helper-icons a'
-  ).forEach(link => {
+  );
 
+  linksToTrack.forEach(link => {
     link.addEventListener('click', () => {
+
       sessionStorage.setItem(
         'dpg_scroll_position',
-        window.scrollY
+        window.scrollY.toString()
       );
 
       sessionStorage.setItem(
         'dpg_restore_scroll',
         '1'
       );
-    });
 
+    });
   });
 
   window.addEventListener('pageshow', () => {
@@ -1709,17 +1712,19 @@ if (
       sessionStorage.getItem('dpg_scroll_position') || 0
     );
 
-    setTimeout(() => {
-
+    requestAnimationFrame(() => {
       window.scrollTo(0, savedPosition);
+    });
 
+    setTimeout(() => {
+      window.scrollTo(0, savedPosition);
       sessionStorage.removeItem('dpg_restore_scroll');
-
-    }, 100);
+    }, 150);
 
   });
 
 }
+
 
 // Contact & Report toggle
 const contactToggleBtn = document.getElementById('contact-toggle-btn');
@@ -1767,7 +1772,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Every 24 hours:
   // const POPUP_COOLDOWN = 24 * 60 * 60 * 1000;
   //
-  const POPUP_COOLDOWN = 5 * 60 * 60 * 1000;
+  const POPUP_COOLDOWN = 2 * 60 * 60 * 1000;
 
 
   // Check if DuggaMap is already running as an installed app
@@ -1777,40 +1782,40 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
-  // Show popup according to the cooldown above
-  function showInstallPopup() {
+// Show popup according to the cooldown above
+// Renamed to maybeShowInstallPopup so the welcome gate can call it later
+function maybeShowInstallPopup() {
 
-    if (isDuggaMapInstalled()) return;
+  if (isDuggaMapInstalled()) return;
 
-    const lastShown = Number(
-      localStorage.getItem('duggamap-install-popup-time') || 0
-    );
+  const lastShown = Number(
+    localStorage.getItem('duggamap-install-popup-time') || 0
+  );
 
-    const now = Date.now();
+  const now = Date.now();
 
-    if (now - lastShown < POPUP_COOLDOWN) return;
+  if (now - lastShown < POPUP_COOLDOWN) return;
 
-    installPopup.style.display = 'flex';
+  installPopup.style.display = 'flex';
 
-    localStorage.setItem(
-      'duggamap-install-popup-time',
-      now
-    );
-  }
+  localStorage.setItem(
+    'duggamap-install-popup-time',
+    now.toString()
+  );
+}
 
-
-  // Browser says installation is available
-  window.addEventListener('beforeinstallprompt', (event) => {
-    event.preventDefault();
-    deferredInstallPrompt = event;
-  });
+// Expose function globally so the welcome gate can trigger it after dismissal
+window.maybeShowInstallPopup = maybeShowInstallPopup;
 
 
-  // Show popup after page loads
-  setTimeout(() => {
-    showInstallPopup();
-  }, 500);
+// Browser says installation is available
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+});
 
+// REMOVED: setTimeout(() => { showInstallPopup(); }, 500);
+// The install popup will now ONLY appear after the welcome gate is dismissed
 
   // Close button
 if (installPopupClose) {
@@ -1878,7 +1883,7 @@ if (directInstallAppBtn) {
       return;
     }
 
-        // Browser does not currently provide the native install prompt
+    // Browser does not currently provide the native install prompt
     showInfoModal(
       '📱 Install DuggaMap',
       'The install option is not currently available in this browser. Please use the browser menu and choose “Install app” or “Add to Home screen”.'
@@ -1887,8 +1892,7 @@ if (directInstallAppBtn) {
   });
 }
 
-
-  // ADD THE METRO MAP CODE HERE
+// ADD THE METRO MAP CODE HERE
 const metroMapLink = document.getElementById('metro-map-link');
 
 if (metroMapLink) {
@@ -1950,3 +1954,56 @@ document.getElementById('copy-url-btn').addEventListener('click', async () => {
     console.error('Failed to copy URL:', err);
   }
 });
+
+
+
+
+// ==========================================
+// WELCOME GATE: Appears BEFORE install popup
+// ==========================================
+
+function shouldShowWelcomeGate() {
+  return sessionStorage.getItem('duggamap-welcome-seen') !== '1';
+}
+
+if (shouldShowWelcomeGate()) {
+
+  const welcomeGate = document.createElement('div');
+
+  welcomeGate.id = 'welcome-gate';
+  welcomeGate.className = 'gate-overlay';
+
+  welcomeGate.innerHTML = `
+    <div class="gate-card">
+      <button id="gate-lets-go" class="gate-btn">Let’s Go</button>
+    </div>
+  `;
+
+  document.body.appendChild(welcomeGate);
+
+  setTimeout(() => {
+
+    welcomeGate.classList.add('is-visible');
+
+    const btn = document.getElementById('gate-lets-go');
+
+    if (btn) {
+
+      btn.addEventListener('click', () => {
+
+        sessionStorage.setItem('duggamap-welcome-seen', '1');
+
+        welcomeGate.classList.add('is-exiting');
+        welcomeGate.classList.remove('is-visible');
+
+        setTimeout(() => {
+          welcomeGate.remove();
+          window.maybeShowInstallPopup();
+        }, 600);
+
+      });
+
+    }
+
+  }, 300);
+}
